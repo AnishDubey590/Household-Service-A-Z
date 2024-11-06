@@ -34,37 +34,45 @@
       <h1 align="center" class="head">Service Professional SignUp </h1>
 
       <div class="con">
-        <form>
-  <div class="mb-3">
-    <label for="exampleInputEmail" class="form-label">Email ID(User)</label>
-    <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
-  </div>
-  <div class="mb-4">
-    <label for="InputPassword" class="form-label">Create Password</label>
-    <input type="password" class="form-control" id="InputPassword">
-    <label for="ConfirmPassword" class="form-label">Confirm Password</label>
-    <input type="password" class="form-control" id="InputPassword">
-    <label for="InputPassword1" class="form-label">Full name</label>
-    <input type="Address" class="form-control" id="InputAddress" aria-describedby="emailHelp">
-    <label for="services" class="form-label">services</label>
-    <select class="form-select" aria-label="Default select example">
-      <option selected>Open this select menu</option>
-      <option value="1">One</option>
-      <option value="2">Two</option>
-      <option value="3">Three</option>
-    </select>
-    <label for="Experience" class="form-label">Experience(in Years)</label>
-    <input type="Experience" class="form-control" id="Experience" aria-describedby="emailHelp">
-    <label for="pdf" class="form-label">Attach Document</label>
-    <input type="file" class="form-control" accept=".pdf" id="pdf" aria-describedby="emailHelp">
-    <label for="InputAddress" class="form-label">Address</label>
-    <input type="Pincode" class="form-control" id="Address" aria-describedby="emailHelp">
-    <label for="Pincode" class="form-label">Pincode</label>
-    <input type="Pincode" class="form-control" id="Pincode" aria-describedby="emailHelp">
-  </div>
-  
-  <button type="submit" class="btn btn-primary">Register</button>
-</form>
+        <form action="/sign_professional" method="POST" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label for="exampleInputEmail" class="form-label">Email ID (User)</label>
+            <input type="email" name="professional_id" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+          </div>
+          
+          <div class="mb-4">
+            <label for="InputPassword" class="form-label">Create Password</label>
+            <input type="password" name="password" class="form-control" id="InputPassword">
+            
+            <label for="ConfirmPassword" class="form-label">Confirm Password</label>
+            <input type="password" name="
+            " class="form-control" id="ConfirmPassword">
+            
+            <label for="InputAddress" class="form-label">Full name</label>
+            <input type="text" name="fullname" class="form-control" id="InputAddress" aria-describedby="emailHelp">
+            
+            <label for="services" class="form-label">Services</label>
+            <select class="form-select" name="service_option" aria-label="Default select example">
+              <option selected>Open this select menu</option>
+              <option value="1">One</option>
+              <option value="2">Two</option>
+              <option value="3">Three</option>
+            </select>
+      
+            <label for="Experience" class="form-label">Experience (in Years)</label>
+            <input type="number" name="experience" class="form-control" id="Experience" aria-describedby="emailHelp">
+            
+            <label for="pdf" class="form-label">Attach Document</label>
+            <input type="file" name="attach_document" class="form-control" accept=".pdf" id="pdf" aria-describedby="emailHelp">
+            
+            <label for="InputAddress" class="form-label">Address</label>
+            <input type="text" name="address" class="form-control" id="Address" aria-describedby="emailHelp">
+            
+            <label for="Pincode" class="form-label">Pincode</label>
+            <input type="number" name="pincode" class="form-control" id="Pincode" aria-describedby="emailHelp">
+          </div>
+          
+          <button type="submit" class="btn btn-primary">Register</button>
+        </form>
       </div>
-  </body>
-</html>
+      

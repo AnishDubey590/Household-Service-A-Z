@@ -38,7 +38,7 @@
               <a class="nav-link" href="#">Search</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{url_for(admin_summary)}}">Summary</a>
+              <a class="nav-link" href="{{url_for('admin_summary')}}">Summary</a>
             </li>
             
             <li class="nav-item">
@@ -59,28 +59,26 @@
       <table class="table table-bordered" style="border: 3px solid #bdc3c7; border-collapse: collapse;">
         <thead>
           <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Service Name</th>
-            <th scope="col">Base Price</th>
-            <th scope="col" >Action</th>
+            <th>Sno</th>
+            {% for heads in heading_Service_names %}
+              <th scope="col">{{ heads }}</th>
+            {% endfor %}
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <th scope="row">1</th>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr>
-            <th scope="row">2</th>
-            <td>Jacob</td>
-            <td>Thornton</td>
-            <td>@fat</td>
-          </tr>
+          {% for row in Services_data %}
+            <tr>
+              <th scope="row">{{ loop.index }}</th> 
+              {% for col in heading_Service_names %}
+                <td>{{ row[col] }}</td> 
+              {% endfor %}
+            </tr>
+          {% endfor %}
         </tbody>
+        
+        
       </table>
-      <a style="float:right;color:#0000FF;cursor:pointer;" >+New Service</a>
+      <a style="float:right;color:#0000FF;cursor:pointer;" href="{{ url_for('admin_service')}}">+New Service</a>
     </div>
 
 
@@ -89,26 +87,23 @@
       <table class="table table-bordered" style="border: 3px solid #bdc3c7; border-collapse: collapse;">
         <thead>
           <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Name</th>
-            <th scope="col">Experience(in Years)</th>
-            <th scope="col" >Service Name</th>
-            <th scope="col" >Action</th>
+            <th>Sno</th>
+            {% for heads in heading_Professional_names %}
+              <th scope="col">{{ heads }}</th>
+            {% endfor %}
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <th scope="row">1</th>
-            <td>Mark</td>
-            <td>Otto</td>
-            <td>@mdo</td>
-          </tr>
-          <tr>
-            <th scope="row">2</th>
-            <td>Jacob</td>
-            <td>Thornton</td>
-            <td>@fat</td>
-          </tr>
+          {% for row in Professionals_data %}
+            <tr>
+              <th scope="row">{{ loop.index }}</th> 
+              {% for col in heading_Professional_names %}
+                <td>{{ row[col] }}</td> 
+              {% endfor %}
+            </tr>
+          {% endfor %}
+
+        
         </tbody>
       </table>
       

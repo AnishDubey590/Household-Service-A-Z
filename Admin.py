@@ -4,7 +4,7 @@ import sys
 
 sys.path.insert(2,'E:\clone\Household-Service-A-Z-\Backend')
 
-from Backend.Main import db,Credential,app
+from Backend.app import db,Credential,app
 # Creating  the app context to work with the db
 with app.app_context():
     # Checking if admin already  credential exists
