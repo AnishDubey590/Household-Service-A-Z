@@ -25,7 +25,7 @@
         
     <nav class="navbar navbar-expand-lg bg-body-tertiary" style="background-color:#0d76ff;text-align: center;">
       <div class="container-fluid">
-        <h1 class="navbar-brand" style="color:rgb(255, 0, 0);">Welcome to Admin</h1>
+        <h1 class="navbar-brand" style="color:rgb(255, 0, 0);">Welcome {{fullname}}</h1>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -35,10 +35,10 @@
               <a class="nav-link active" aria-current="page" href="#">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Search</a>
+              <a class="nav-link" href="{{url_for('customer_search')}}">Search</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="Summary.html">Summary</a>
+              <a class="nav-link" href="{{url_for('customer_summary')}}">Summary</a>
             </li>
             
             <li class="nav-item">
@@ -53,93 +53,34 @@
         </div>
       </div>
     </nav>
-
-    <h2 style="font-size:20px;">Services</h2>
+    {%for service in Service_names %}
+    <div class="card" style="width: 18rem;padding:10px;margin:10px;">
+      <img src="" class="card-img-top" alt="">
+      <div class="card-body">
+        <h5 class="card-title">{{service}}</h5>
+        <p class="card-text"></p>
+        <a href="#" class="btn btn-primary" style="text-align: center;">Click</a>
+      </div>
+    </div>
+    {%endfor%}
+    <h2 style="font-size:20px;">Service History</h2>
     <div>
       <table class="table table-bordered" style="border: 3px solid #bdc3c7; border-collapse: collapse;">
         <thead>
           <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Service Name</th>
-            <th scope="col">Base Price</th>
-            <th scope="col" >Action</th>
+            {%for Servicebooked in service_Booked%}
+            <th scope="col">{{Servicebooked}}</th>
+            {%endfor%}
           </tr>
         </thead>
         <tbody>
           <tr>
             <th scope="row">1</th>
-            <td>Mark</td>
-            <td>Otto</td>
-            <td>@mdo</td>
-          </tr>
-          <tr>
-            <th scope="row">2</th>
-            <td>Jacob</td>
-            <td>Thornton</td>
-            <td>@fat</td>
           </tr>
         </tbody>
       </table>
-      <a style="float:right;color:#0000FF;cursor:pointer;" >+New Service</a>
-    </div>
-
-
-    <h3 style="font-size:20px;">Professionals</h3>
-    <div>
-      <table class="table table-bordered" style="border: 3px solid #bdc3c7; border-collapse: collapse;">
-        <thead>
-          <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Name</th>
-            <th scope="col">Experience(in Years)</th>
-            <th scope="col" >Service Name</th>
-            <th scope="col" >Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope="row">1</th>
-            <td>Mark</td>
-            <td>Otto</td>
-            <td>@mdo</td>
-          </tr>
-          <tr>
-            <th scope="row">2</th>
-            <td>Jacob</td>
-            <td>Thornton</td>
-            <td>@fat</td>
-          </tr>
-        </tbody>
-      </table>
-      
-    </div>
-    
-    <h4 style="font-size:20px;">Service Requests</h4>
-      <div>
-        <table class="table table-bordered" style="border: 3px solid #bdc3c7; border-collapse: collapse;">
-          <thead>
-            <tr>
-              <th scope="col">ID</th>
-              <th scope="col">Assigned if any</th>
-              <th scope="col">Request Date</th>
-              <th scope="col" >Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">1</th>
-              <td>Mark</td>
-              <td>Otto</td>
-              <td>@mdo</td>
-            </tr>
-            <tr>
-              <th scope="row">2</th>
-              <td>Jacob</td>
-              <td>Thornton</td>
-              <td>@fat</td>
-            </tr>
-          </tbody>
-        </table>
+     
+  
         
       </div>
       
