@@ -15,7 +15,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://getbootstrap.com/docs/5.3/assets/css/docs.css" rel="stylesheet">
-    <title>Bootstrap Example</title>
+    <title> A-Z Services</title>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   </head>
   <body class="p-3 m-0 border-0 bd-example m-0 border-0">
@@ -25,7 +25,7 @@
         
     <nav class="navbar navbar-expand-lg bg-body-tertiary" style="background-color:#0d76ff;text-align: center;">
       <div class="container-fluid">
-        <h1 class="navbar-brand" style="color:rgb(255, 0, 0);">Welcome, Admin</h1>
+        <h1 class="navbar-brand" style="color:rgb(255, 0, 0);">Welcome Admin</h1>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -58,45 +58,32 @@
     <div>
       <table class="table table-bordered" style="border: 3px solid #bdc3c7; border-collapse: collapse;">
           <thead>
-              <tr>
-                  <th>Sno</th>
-                  {% for heads in heading_Service_names %}
-                      <th scope="col">{{ heads }}</th>
-                  {% endfor %}
-              </tr>
+            <tr>
+              <th>Service ID</th>
+              <th>Category Name</th>
+              <th>Category Description</th>
+              <th>Service Name</th>
+              <th>Service Description</th>
+              <th>Base Price</th>
+            </tr>
           </thead>
           <tbody>
-              {% for row in Services_data %}
-                  <tr data-bs-toggle="modal" data-bs-target="#serviceModal{{ loop.index }}">
-                      <th scope="row">{{ loop.index }}</th>
-                      {% for col in heading_Service_names %}
-                          <td>{{ row[col] }}</td>
-                      {% endfor %}
-                  </tr>
-  
-                  <!-- Modal for each service -->
-                  <div class="modal fade" id="serviceModal{{ loop.index }}" tabindex="-1" aria-labelledby="serviceModalLabel{{ loop.index }}" aria-hidden="true">
-                      <div class="modal-dialog">
-                          <div class="modal-content">
-                              <div class="modal-header">
-                                  <h5 class="modal-title" id="serviceModalLabel{{ loop.index }}">{{ row['Service Name'] }}</h5>
-                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                              </div>
-                              <div class="modal-body">
-                                  <p><strong>Description:</strong> {{ row['Description'] }}</p>
-                                  <img src="{{ row['Image_URL'] }}" alt="Service Image" class="img-fluid" style="max-height: 400px;">
-                              </div>
-                              <div class="modal-footer">
-                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-              {% endfor %}
+            {% for row in joined_data %}
+            <tr>
+              <th scope="row">{{row.service_id}}</th>
+              <td>{{ row.category_name }}</td>
+              <td>{{ row.category_description }}</td>
+              <td>{{ row.service_name }}</td>
+              <td>{{ row.service_description }}</td>
+              <td>{{ row.base_price }}</td>
+            </tr>
+            {% endfor %}
           </tbody>
+        </table>
+        
       </table>
-      <a style="float:right;color:#0000FF;cursor:pointer;" href="{{ url_for('admin_service') }}">+Remove Service</a>
-      <a style="float:right;color:#0000FF;cursor:pointer;" href="{{ url_for('admin_service') }}">+New Service</a>
+      <a style="float:right;color:#0000FF;cursor:pointer;margin:10px;" href="{{ url_for('admin_update_service') }}">+Update Service details</a>
+      <a style="float:right;color:#0000FF;cursor:pointer;margin:10px;" href="{{ url_for('admin_service') }}">+New Service</a>
   </div>
   
   <!-- Bootstrap JS and Popper (required for modal to work) -->
@@ -111,61 +98,146 @@
   
 
 
-    <h3 style="font-size:20px;">Professionals</h3>
-    <div>
-      <table class="table table-bordered" style="border: 3px solid #bdc3c7; border-collapse: collapse;">
-        <thead>
-          <tr>
-            <th>Sno</th>
-            {% for heads in heading_Professional_names %}
-              <th scope="col">{{ heads }}</th>
-            {% endfor %}
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in Professionals_data %}
-            <tr>
-              <th scope="row">{{ loop.index }}</th> 
-              {% for col in heading_Professional_names %}
-                <td>{{ row[col] }}</td> 
-              {% endfor %}
-            </tr>
-          {% endfor %}
+  <h3 style="font-size:20px;">Professionals</h3>
+<div>
+  <table class="table table-bordered" style="border: 3px solid #bdc3c7; border-collapse: collapse;">
+    <thead>
+      <tr>
+        <th>Professional ID</th>
+        <th>Full Name</th>
+        <th>Experience</th>
+        <th>Contact Number</th>
+        <th>Document</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in Professionals_data %}
+        <tr>
+          <th scope="row">{{ row.professional_id }}</th>
+          <td>{{ row.full_name }}</td>
+          <td>{{ row.experience }}</td>
+          <td>{{ row.contact_number }}</td>
+          <td><a href="{{ url_for('view_document', professional_id=row.professional_id) }}">View Document</a></td>
+          <td>{{ row.status }}</td>
+          <td>
+            {% if row.status == 'Pending' %}
+              <form method="POST" action="{{ url_for('update_status') }}" style="display:inline;">
+                <input type="hidden" name="professional_id" value="{{ row.professional_id }}">
+                <input type="hidden" name="status" value="Approved">
+                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+              </form>
+            {% endif %}
 
-        
-        </tbody>
-      </table>
+            {% if row.status == 'Pending' %}
+              <form method="POST" action="{{ url_for('update_status') }}" style="display:inline;">
+                <input type="hidden" name="professional_id" value="{{ row.professional_id }}">
+                <input type="hidden" name="status" value="Rejected">
+                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+              </form>
+            {% endif %}
+
+            {% if row.status == 'Blocked' %}
+              <form method="POST" action="{{ url_for('update_status') }}" style="display:inline;">
+                <input type="hidden" name="professional_id" value="{{ row.professional_id }}">
+                <input type="hidden" name="status" value="Approved">
+                <button type="submit" class="btn btn-warning btn-sm">Unblock</button>
+              </form>
+              {% endif %}
+            {% if row.status == 'Approved' %}
+              <form method="POST" action="{{ url_for('update_status') }}" style="display:inline;">
+                <input type="hidden" name="professional_id" value="{{ row.professional_id }}">
+                <input type="hidden" name="status" value="Blocked">
+                <button type="submit" class="btn btn-warning btn-sm">Block</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h3 style="font-size:20px;">Customer</h3>
+<div>
+  <table class="table table-bordered" style="border: 3px solid #bdc3c7; border-collapse: collapse;">
+    <thead>
+      <tr>
+        <th>Customer ID</th>
+        <th>Full Name</th>
+        <th>Contact Number</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in customer_data %}
+        <tr>
+          <th scope="row">{{ row.customer_id }}</th>
+          <td>{{ row.full_name }}</td>
+          <td>{{ row.contact }}</td>
+          <td>{{ row.status }}</td>
+          <td>
+            {% if row.status == 'active' %}
+              <form method="POST" action="{{ url_for('customer_status') }}" style="display:inline;">
+                <input type="hidden" name="customer_id" value="{{ row.customer_id }}">
+                <input type="hidden" name="status" value="blocked">
+                <button type="submit" class="btn btn-success btn-sm">block</button>
+              </form>
+            {% endif %}
+
+            {% if row.status == 'blocked' %}
+              <form method="POST" action="{{ url_for('customer_status') }}" style="display:inline;">
+                <input type="hidden" name="customer_id" value="{{ row.customer_id }}">
+                <input type="hidden" name="status" value="active">
+                <button type="submit" class="btn btn-warning btn-sm">Unblock</button>
+              </form>
+              {% endif %}
+
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+      </tbody>
+    </table>
+  </div>
+  
       
     </div>
     
     <h4 style="font-size:20px;">Service Requests</h4>
-      <div>
-        <table class="table table-bordered" style="border: 3px solid #bdc3c7; border-collapse: collapse;">
-          <thead>
+    <div>
+      <table class="table table-bordered" style="border: 3px solid #bdc3c7; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th scope="col">Booking ID</th>
+            <th scope="col">Assigned Professional</th>
+            <th scope="col">Request Date</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if service_requests %}
+            {% for request in service_requests %}
+              <tr>
+                <th scope="row">{{ request.id }}</th>
+                <td>{{ request.professional_name if request.professional_name else "Not Assigned" }}</td>
+                <td>{{ request.request_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ request.status }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
             <tr>
-              <th scope="col">ID</th>
-              <th scope="col">Assigned if any</th>
-              <th scope="col">Request Date</th>
-              <th scope="col" >Status</th>
+              <td colspan="4" class="text-center">No service requests found.</td>
             </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">1</th>
-              <td>Mark</td>
-              <td>Otto</td>
-              <td>@mdo</td>
-            </tr>
-            <tr>
-              <th scope="row">2</th>
-              <td>Jacob</td>
-              <td>Thornton</td>
-              <td>@fat</td>
-            </tr>
-          </tbody>
-        </table>
-        
-      </div>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+    
       
 
   </body>

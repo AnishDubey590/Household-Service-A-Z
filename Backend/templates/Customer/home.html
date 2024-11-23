@@ -53,36 +53,112 @@
         </div>
       </div>
     </nav>
-    {%for service in Service_names %}
-    <div class="card" style="width: 18rem;padding:10px;margin:10px;">
-      <img src="" class="card-img-top" alt="">
-      <div class="card-body">
-        <h5 class="card-title">{{service}}</h5>
-        <p class="card-text"></p>
-        <a href="#" class="btn btn-primary" style="text-align: center;">Click</a>
-      </div>
-    </div>
-    {%endfor%}
-    <h2 style="font-size:20px;">Service History</h2>
-    <div>
-      <table class="table table-bordered" style="border: 3px solid #bdc3c7; border-collapse: collapse;">
-        <thead>
-          <tr>
-            {%for Servicebooked in service_Booked%}
-            <th scope="col">{{Servicebooked}}</th>
-            {%endfor%}
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope="row">1</th>
-          </tr>
-        </tbody>
-      </table>
-     
+    <div class="container my-3 text-center">
+  <h6 class="mb-4" style="font-size: 25px; font-weight: bold;">Available Services</h6>
+
+
+  <!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+  <div class="flash-messages">
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endwith %}
+
+<!-- Display Categories -->
+{% if categories %}
+<h3>Select a Category</h3>
+<div class="row">
+    {% for category in categories %}
+        <div class="col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ category.category_name }}</h5>
+                    <p class="card-text">{{ category.category_description }}</p>
+                    <a href="{{ url_for('customer_home', category_id=category.category_id) }}" class="btn btn-primary">
+                        View Services
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Display Services -->
+{% if services %}
+<h3>Services in {{ selected_category.category_name }}</h3>
+<div class="row">
+    {% for service in services %}
+        <div class="col-md-4 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ service.service_name }}</h5>
+                    <p class="card-text">{{ service.service_description }}</p>
+                    <p>Base Price: ₹{{ service.base_price }}</p>
+                    <form method="POST" action="{{ url_for('customer_home') }}">
+                        <input type="hidden" name="service_id" value="{{ service.service_id }}">
+                        <button type="submit" class="btn btn-success">Book</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+<a href="{{ url_for('customer_home') }}" class="btn btn-secondary">Back to Categories</a>
+{% endif %}
+
+<h2 style="font-size:20px;align:left;">Service History</h2>
+<div>
+  <table class="table table-bordered" style="border: 3px solid #bdc3c7; border-collapse: collapse;">
+    <thead>
+      <tr>
+        <th>Service Name</th>
+        <th>Professional Name</th>
+        <th>Contact Number</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if service_history %}
+      {% for record in service_history %}
+      <tr>
+        <td>{{ record.service_name }}</td>
+        <td>{{ record.professional_name if record.professional_name else 'N/A' }}</td>
+        <td>{{ record.contact_number if record.contact_number else 'N/A' }}</td>
+        <td>
+          {% if record.status == 'Pending' and not record.professional_name %}
+            Requested
+          {% else %}
+            {{ record.status }}
+          {% endif %}
+        </td>
+        <td>
+          {% if record.status == 'Pending' and not record.professional_name %}
+            Requested
+          {% elif record.status not in ['Closed', 'Requested'] %}
+            <a href="{{ url_for('professional_rating', booking_id=record.booking_id) }}" class="btn btn-warning">Close Service</a>
+          {% else %}
+            <button class="btn btn-secondary" disabled>Closed</button>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+  {% else %}
+      <tr>
+        <td colspan="5" class="text-center">No service history found.</td>
+      </tr>
+  {% endif %}
   
-        
-      </div>
+    </tbody>
+  </table>
+</div>
+
+
       
 
   </body>

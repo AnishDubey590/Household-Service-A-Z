@@ -77,7 +77,7 @@
               <select class="form-select" name="service_option" required>
                 <option selected>Choose a service</option>
                 {% for name in Services_names %}
-                <option value="1">{{name}}</option>
+                <option name="service_option">{{name}}</option>
                 {%endfor%}
               </select>
             </div>

@@ -1,62 +1,109 @@
-<style>
-  .head {
-      font-size: 50px;
-      font-weight: bold;
-      padding: 20px;
-      color: rgb(150, 0, 225);
-      text-align: center;
-  }
-  .con {
-      max-width: 600px;
-      margin: auto;
-      padding-top: 50px;
-  }
-  .form-label {
-      font-weight: bold;
-  }
-  .form-control {
-      margin-bottom: 15px;
-  }
-  .btn-group {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-  }
-</style>
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>New Services</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://getbootstrap.com/docs/5.3/assets/css/docs.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>New Services</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .head {
+            font-size: 50px;
+            font-weight: bold;
+            padding: 20px;
+            color: rgb(150, 0, 225);
+            text-align: center;
+        }
+        .con {
+            max-width: 600px;
+            margin: auto;
+            padding-top: 50px;
+        }
+        .form-label {
+            font-weight: bold;
+        }
+        .form-control {
+            margin-bottom: 15px;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .flash-messages {
+            margin-top: 20px;
+        }
+        .flash-messages .alert {
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
-  <h1 class="head">New Services</h1>
+    <h1 class="head">New Services</h1>
 
-  <div class="con">
-      <form action="{{ url_for('admin_service') }}" method="POST" enctype="multipart/form-data">
+    <div class="con">
+        <form action="{{ url_for('admin_service') }}" method="POST" enctype="multipart/form-data">
+            <!-- Category Selection -->
+            <div class="mb-3 d-flex align-items-center">
+              <label for="category" class="form-label me-2">Category Available</label>
+              <select class="form-select" name="category_name" id="categorySelect" required>
+                  <option selected>Choose a category</option>
+                  {% for name in category_names %}
+                      <option value="{{ name }}">{{ name }}</option>
+                  {% endfor %}
+              </select>
+              
+              <!-- Link to add a new category -->
+              <a href="?add_new_category=true" class="ms-3">Add New Category</a>
+          </div>
+      
+          {% if add_new_category %}
           <div class="mb-3">
-              <label for="serviceName" class="form-label">Service Name</label>
-              <input name="Service_name" class="form-control" id="serviceName" placeholder="Enter service name">
+              <label for="new_category_name" class="form-label">New Category</label>
+              <input name="new_category_name" class="form-control" id="newCategory" placeholder="Enter new category name">
+              <label for="category_description" class="form-label">Category Description</label>
+              <input name="category_description" class="form-control" id="category_description" placeholder="Enter Category Description">
+            </div>
+          {% endif %}
+            
 
-              <label for="description" class="form-label">Description</label>
-              <textarea name="Description" class="form-control" id="description" rows="3" placeholder="Enter description"></textarea>
+            <!-- Service Name -->
+            <div class="mb-3">
+                <label for="serviceName" class="form-label">Service Name</label>
+                <input name="Service_name" class="form-control" id="serviceName" placeholder="Enter service name">
+            </div>
 
-              <label for="basePrice" class="form-label">Base Price</label>
-              <input name="Base_Price" class="form-control" id="basePrice" placeholder="Enter base price">
+            <!-- Description -->
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea name="Description" class="form-control" id="description" rows="3" placeholder="Enter description"></textarea>
+            </div>
 
-              <label for="imageUpload" class="form-label">Upload Image</label>
-              <input type="file" name="image" class="form-control" id="imageUpload">
-          </div>
+            <!-- Base Price -->
+            <div class="mb-3">
+                <label for="basePrice" class="form-label">Base Price</label>
+                <input name="Base_Price" class="form-control" id="basePrice" placeholder="Enter base price">
+            </div>
 
-          <div class="btn-group">
-              <button type="submit" class="btn btn-primary">Add</button>
-              <a href="{{ url_for('admin_home') }}" class="btn btn-secondary">Cancel</a>
-          </div>
-      </form>
-  </div>
+            
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% endwith %}
+
+            <!-- Buttons -->
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary">Add</button>
+                <a href="{{ url_for('admin_home') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
 </body>
 </html>

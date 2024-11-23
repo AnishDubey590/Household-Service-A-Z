@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Remarks</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">Service Remarks</h1>
+    
+    <!-- Display Service Information -->
+    <div class="card shadow p-4 mb-4">
+      <h4 class="card-title mb-3">Service Details</h4>
+      <div class="row mb-2">    
+        <div class="col-md-6">
+          <strong>Service Name:</strong> <span>{{ service_request.service_name }}</span>
+        </div>
+        <div class="col-md-6">
+          <strong>Service ID:</strong> <span>{{ service_request.service_id }}</span>
+        </div>
+      </div>
+      <div class="row mb-2">
+        <div class="col-md-6">
+          <strong>Date of Request:</strong> <span>{{ service_request.request_date }}</span>
+        </div>
+        <div class="col-md-6">
+          <strong>Professional ID:</strong> <span>{{ service_request.professional_id }}</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <strong>Professional Name:</strong> <span>{{ service_request.professional_name }}</span>
+        </div>
+        <div class="col-md-6">
+          <strong>Contact Number:</strong> <span>{{ service_request.contact_number }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Remarks and Rating Form -->
+    <form method="POST" action="{{ url_for('professional_rating', booking_id=service_request.booking_id) }}">
+        <div class="card shadow p-4">
+        <h4 class="card-title mb-3">Add Your Remarks</h4>
+        
+        <!-- Service Rating -->
+        <div class="mb-3">
+          <label for="serviceRating" class="form-label"><strong>Service Rating (1 to 5):</strong></label>
+          <select class="form-select" id="serviceRating" name="service_rating" required>
+            <option value="" disabled selected>Select Rating</option>
+            <option value="1">1 - Poor</option>
+            <option value="2">2 - Fair</option>
+            <option value="3">3 - Good</option>
+            <option value="4">4 - Very Good</option>
+            <option value="5">5 - Excellent</option>
+          </select>
+        </div>
+        
+        <!-- Remarks -->
+        <div class="mb-3">
+          <label for="serviceRemarks" class="form-label"><strong>Remarks (Optional):</strong></label>
+          <textarea class="form-control" id="serviceRemarks" name="service_remarks" rows="4" placeholder="Add any remarks about the service..."></textarea>
+        </div>
+        
+        <!-- Buttons -->
+        <div class="d-flex justify-content-between">
+          <button type="submit" class="btn btn-success">Submit</button>
+          <a href="{{ url_for('customer_home') }}" class="btn btn-secondary">Close</a>
+        </div>
+      </div>
+    </form>
+  </div>
+
+</body>
+</html>
