@@ -67,28 +67,57 @@
               {% endif %}
               {% endif %}
               {% endfor %}
-              <p>{{flag1['value']}}</p>
-            <tr>
-              <td>{{ row.customer_full_name }}</td>
-              <td>{{ row.customer_contact }}</td>
-              <td>{{ row.customer_address }}, {{ row.customer_pin }}</td>
-              <td>{{ row.request_status }}</td>
-              <td>
+              
+            
               
                 {% if flag1['value'] %}
                   <!-- If rejected, show "Rejected" instead of buttons -->
+                  <tr>
+                    <td>{{ row.customer_full_name }}</td>
+                    <td>{{ row.customer_contact }}</td>
+                    <td>{{ row.customer_address }}, {{ row.customer_pin }}</td>
+                    <td>{{ row.request_status }}</td>
+                    <td>
                   <p>Rejected</p>
                 {% else %}
                   {% if row.request_status == "Pending" %}
+                  <tr>
+                    <td>{{ row.customer_full_name }}</td>
+                    <td>{{ row.customer_contact }}</td>
+                    <td>{{ row.customer_address }}, {{ row.customer_pin }}</td>
+                    <td>{{ row.request_status }}</td>
+                    <td>
                     <form method="POST" action="{{ url_for('professional_home') }}" style="display:inline;">
                       <input type="hidden" name="service_id" value="{{ row.booked_service_id }}">
                       <button type="submit" name="action" value="Accept" class="btn btn-success btn-sm">Accept</button>
                       <button type="submit" name="action" value="Reject" class="btn btn-danger btn-sm">Reject</button>
                     </form>
-                  {% elif row.request_status == "Closed" %}
+                    {%elif row.request_status == "Accepted" and row.professional_id==professional_id%}
+                    <tr>
+                      <td>{{ row.customer_full_name }}</td>
+                      <td>{{ row.customer_contact }}</td>
+                      <td>{{ row.customer_address }}, {{ row.customer_pin }}</td>
+                      <td>{{ row.request_status }}</td>
+                      <td>
+                    <p>{{None}}</p>
+                    {% elif row.request_status == "Closed" and row.professional_id==professional_id %}
+                    <tr>
+                      <td>{{ row.customer_full_name }}</td>
+                      <td>{{ row.customer_contact }}</td>
+                      <td>{{ row.customer_address }}, {{ row.customer_pin }}</td>
+                      <td>{{ row.request_status }}</td>
+                      <td>
+                    <p>None</p>
                     {% if row.rating_by_professional is none %}
+                      <!-- Show Rate button if not yet rated -->
                       <a href="{{ url_for('customer_rating', booking_id=row.booked_service_id) }}" class="btn btn-primary btn-sm">Rate</a>
-                    {% else %}
+                    {% else %}<tr>
+                      <td>{{ row.customer_full_name }}</td>
+                      <td>{{ row.customer_contact }}</td>
+                      <td>{{ row.customer_address }}, {{ row.customer_pin }}</td>
+                      <td>{{ row.request_status }}</td>
+                      <td>
+                      <!-- Show Rated text if already rated -->
                       <p>Rated</p>
                     {% endif %}
                   {% endif %}

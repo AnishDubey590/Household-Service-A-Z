@@ -60,6 +60,7 @@
         <thead>
           <tr>
             <th scope="col">Booking ID</th>
+            <th scope="col">Service Name</th>
             <th scope="col">Assigned Professional (if any)</th>
             <th scope="col">Requested Date</th>
             <th scope="col">Status (Running/Approved/Closed)</th>
@@ -70,6 +71,7 @@
             {% for request in service_requests %}
             <tr>
               <th scope="row">{{ request.booking_id }}</th>
+              <td>{{ request.service_name }}</td>
               <td>{{ request.professional_name if request.professional_name else 'Not Assigned' }}</td>
               <td>{{ request.request_date.strftime('%Y-%m-%d') }}</td>
               <td>{{ request.status }}</td>

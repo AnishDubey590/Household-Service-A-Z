@@ -9,6 +9,8 @@ import logging
 from sqlalchemy.orm import aliased
 from datetime import datetime
 from sqlalchemy import func
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -72,8 +74,8 @@ def book_service(last_booking_id, customer_id, service_id):
             customer_id=customer_id,
             service_id=service_id,
             status='Pending',
-            rating_by_user=-1,
-            rating_by_professional=-1,
+            rating_by_user=None,
+            rating_by_professional=None,
             remarks_by_customer=None,
             remarks_by_professional=None
         )
@@ -130,7 +132,7 @@ def login():
                     else:
                         flash("Approvel Pending by Admin","error")
                 elif user_record.flag == "customer":
-                    if(user_record.status=="active"):
+                    if(user_record.status=="Active"):
                         return redirect(url_for('customer_home'))
                     else:
                         flash("Admin has Blocked you.","error")
@@ -403,6 +405,12 @@ def admin_summary():
     professional_ratings = db.session.query(
         Professional.professional_id.label("professional_id"),
         Professional.full_name.label("professional_name"),
+        db.func.count(
+            case(
+                (ServiceBooked.rating_by_user.isnot(None), ServiceBooked.rating_by_professional),
+                else_=None  # Count only valid ratings
+            )
+        ).label("ratings_given"),
         db.func.avg(
             case(
                 (ServiceBooked.rating_by_user.isnot(None), ServiceBooked.rating_by_user),
@@ -420,10 +428,16 @@ def admin_summary():
         db.func.count(ServiceBooked.booking_id).label("service_requests_count"),  # Count service requests
         db.func.count(
             case(
-                (ServiceBooked.rating_by_user.isnot(None), ServiceBooked.rating_by_user),
+                (ServiceBooked.rating_by_user.isnot(None), ServiceBooked.rating_by_professional),
                 else_=None  # Count only valid ratings
             )
-        ).label("ratings_given")  # Count ratings given by customer
+        ).label("ratings_given"),  # Count ratings given by customer
+        db.func.avg(
+            case(
+                (ServiceBooked.rating_by_user.isnot(None), ServiceBooked.rating_by_professional),
+                else_=None  # Count only valid ratings
+            )
+        ).label("average_rating") 
     ).join(ServiceBooked, Customer.customer_id == ServiceBooked.customer_id, isouter=True) \
      .group_by(Customer.customer_id, Customer.full_name).all()
 
@@ -470,7 +484,7 @@ def professional_details(professional_id):
 def customer_details(customer_id):
     # Fetch data for the customer
     ratings = db.session.query(
-        ServiceBooked.rating_by_user,
+        ServiceBooked.rating_by_professional,
         ServiceBooked.professional_id
     ).filter(ServiceBooked.customer_id == customer_id).all()
 
@@ -480,14 +494,14 @@ def customer_details(customer_id):
     ).filter(ServiceBooked.customer_id == customer_id).group_by(ServiceBooked.status).all()
 
     # Prepare data for charts
-    rating_values = [r.rating_by_user for r in ratings if r.rating_by_user is not None]
-    professional_ids = [r.professional_id for r in ratings if r.rating_by_user is not None]
+    rating_values = [r.rating_by_professional for r in ratings if r.rating_by_professional is not None]
+    professional_ids = [r.professional_id for r in ratings if r.rating_by_professional is not None]
     mean_rating = round(sum(rating_values) / len(rating_values), 2) if rating_values else 0
 
     request_status = {status: count for status, count in request_summary}
 
     # Generate charts
-    bar_chart = generate_bar_chart(professional_ids, rating_values, "Professional Ratings")
+    bar_chart = generate_bar_chart(professional_ids, rating_values, "customer Ratings")
     pie_chart = generate_pie_chart(request_status, "Service Requests")
 
     return render_template(
@@ -500,7 +514,7 @@ def customer_details(customer_id):
 
 
 def generate_bar_chart(labels, values, title):
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(3, 5))
     plt.bar(labels, values, color='skyblue')
     plt.title(title)
     plt.xlabel("IDs")
@@ -664,7 +678,7 @@ def admin_search():
                 ServiceBooked.status
             ).join(Service, ServiceBooked.service_id == Service.service_id) \
              .outerjoin(Professional, ServiceBooked.professional_id == Professional.professional_id) \
-             .filter(Professional.professional_id.like(f"%{search_query}%")).all()
+             .filter(Professional.full_name.like(f"%{search_query}%")).all()
 
     return render_template("Admin/Search.html", service_requests=service_requests)
 
@@ -691,6 +705,7 @@ def professional_home():
             customer_alias.contact.label("customer_contact"),
             customer_alias.address.label("customer_address"),
             customer_alias.pin.label("customer_pin"),
+            ServiceBooked.rating_by_professional,
             ServiceBooked.professional_id.label("professional_id"),            
             ServiceBooked.status.label("request_status"),
             ServiceBooked.booking_id.label("booked_service_id"),
@@ -824,7 +839,6 @@ def customer_home():
             categories=categories,
             service_history=service_history
         )
-
 
 
 

@@ -62,11 +62,11 @@
           
       
           <h2>Professionals</h2>
-          <table border="1">
-              <thead>
+          <table class="table table-bordered" style="border: 3px solid #bdc3c7; border-collapse: collapse;">              <thead>
                   <tr>
                       <th>Professional ID</th>
                       <th>Name</th>
+                      <th>No of Customer rated</th>
                       <th>Average Rating</th>
                       <th>Details</th>
                   </tr>
@@ -76,6 +76,7 @@
                   <tr>
                       <td>{{ pro.professional_id }}</td>
                       <td>{{ pro.professional_name }}</td>
+                      <td>{{ pro.ratings_given }}</td>
                       <td>{{ "%.2f" % pro.average_rating if pro.average_rating else "N/A" }}</td>
                       <td>
                           <a href="{{ url_for('professional_details', professional_id=pro.professional_id) }}">
@@ -88,13 +89,13 @@
           </table>
       
           <h2>Customers</h2>
-          <table border="1">
-              <thead>
+          <table class="table table-bordered" style="border: 3px solid #bdc3c7; border-collapse: collapse;">              <thead>
                   <tr>
                       <th>Customer ID</th>
                       <th>Name</th>
                       <th>Service Requests</th>
-                      <th>Ratings Given</th>
+                      <th>No of Professionals rated</th>
+                      <th>Average Rating</th>
                       <th>Details</th>
                   </tr>
               </thead>
@@ -105,6 +106,7 @@
                       <td>{{ cust.customer_name }}</td>
                       <td>{{ cust.service_requests_count }}</td>
                       <td>{{ cust.ratings_given }}</td>
+                      <td>{{ "%.2f" % cust.average_rating if cust.average_rating else "N/A" }}</td>
                       <td>
                           <a href="{{ url_for('customer_details', customer_id=cust.customer_id) }}">
                               View Details
