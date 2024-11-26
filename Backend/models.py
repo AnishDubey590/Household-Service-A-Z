@@ -147,7 +147,7 @@ class IDs(db.Model):
     professional_id = db.Column(db.String(50), unique=True)
     service_id=db.Column(db.String(50), unique=True)
     booking_id=db.Column(db.String(50), unique=True) 
-    category_id=db.Column(db.String(50),unique=True)
+    category_id=db.Column(db.String(50))
     rejection_id=db.Column(db.String(50),unique=True)
     def __init__(self, customer_id, professional_id,rejection_id,service_id,booking_id,category_id):
         self.customer_id = customer_id

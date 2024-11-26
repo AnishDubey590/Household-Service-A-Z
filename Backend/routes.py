@@ -1,5 +1,5 @@
 from sqlalchemy import inspect
-from flask import session,render_template, request, flash, redirect, url_for,send_file
+from flask import session,render_template, request, flash, redirect, url_for,send_file,abort
 from app import app, db
 from models import Credential, Customer, Professional, Service,Category,ServiceBooked,IDs,RejectionTracking
 import os
@@ -8,7 +8,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import logging
 from sqlalchemy.orm import aliased
 from datetime import datetime
-from sqlalchemy import func,case
+from sqlalchemy import func
+import matplotlib.pyplot as plt
+import io
+import base64
+from flask import render_template, send_file
+from sqlalchemy.sql import case
 
 
 
@@ -374,10 +379,21 @@ def update_status():
     # Redirect to the home page after update (or wherever you want to send the user)
     return redirect(url_for('admin_home'))  # Redirect to the home route
 
+DOCUMENTS_DIRECTORY = "E:\\clone\\Household-Service-A-Z-\\Backend\\instance\\Documents"
+
 @app.route('/view_document/<professional_id>')
 def view_document(professional_id):
-    professional = Professional.query.filter_by(professional_id=professional_id).first()
-    return send_file("E:\clone\Household-Service-A-Z-\Backend\instance\Documents\24ASZPA2.pdf", mimetype='application/pdf', as_attachment=False)
+    # Construct the expected file path
+    filename = f"{professional_id}.pdf"  # Ensure the file naming format matches
+    file_path = os.path.join(DOCUMENTS_DIRECTORY, filename)
+    
+    # Check if the file exists
+    if not os.path.exists(file_path):
+        # Return a 404 error if the file doesn't exist
+        abort(404, description="File not found")
+    
+    # Serve the file
+    return send_file(file_path, mimetype='application/pdf', as_attachment=False)
 
 
 
@@ -389,7 +405,7 @@ def admin_summary():
         Professional.full_name.label("professional_name"),
         db.func.avg(
             case(
-                [(ServiceBooked.rating_by_user.isnot(None), ServiceBooked.rating_by_user)],
+                (ServiceBooked.rating_by_user.isnot(None), ServiceBooked.rating_by_user),
                 else_=None  # Exclude null ratings
             )
         ).label("average_rating"),
@@ -404,25 +420,119 @@ def admin_summary():
         db.func.count(ServiceBooked.booking_id).label("service_requests_count"),  # Count service requests
         db.func.count(
             case(
-                [(ServiceBooked.rating_by_user.isnot(None), ServiceBooked.rating_by_user)],
+                (ServiceBooked.rating_by_user.isnot(None), ServiceBooked.rating_by_user),
                 else_=None  # Count only valid ratings
             )
         ).label("ratings_given")  # Count ratings given by customer
     ).join(ServiceBooked, Customer.customer_id == ServiceBooked.customer_id, isouter=True) \
      .group_by(Customer.customer_id, Customer.full_name).all()
 
-    # Fetch customer service request summary
-    service_summary = db.session.query(
-        ServiceBooked.status,
-        db.func.count(ServiceBooked.booking_id).label("request_count")
-    ).group_by(ServiceBooked.status).all()
-
     return render_template(
         "Admin/Summary.html",
         professional_ratings=professional_ratings,
-        service_summary=service_summary,
-        customer_summary=customer_summary  # Pass customer summary data
+        customer_summary=customer_summary
     )
+
+@app.route("/admin/professional/<string:professional_id>")
+def professional_details(professional_id):
+    # Fetch data for the professional
+    ratings = db.session.query(
+        ServiceBooked.rating_by_user,
+        ServiceBooked.customer_id
+    ).filter(ServiceBooked.professional_id == professional_id).all()
+
+    request_summary = db.session.query(
+        ServiceBooked.status,
+        db.func.count(ServiceBooked.booking_id).label("count")
+    ).filter(ServiceBooked.professional_id == professional_id).group_by(ServiceBooked.status).all()
+
+    # Prepare data for charts
+    rating_values = [r.rating_by_user for r in ratings if r.rating_by_user is not None]
+    customer_ids = [r.customer_id for r in ratings if r.rating_by_user is not None]
+    mean_rating = round(sum(rating_values) / len(rating_values), 2) if rating_values else 0
+
+    request_status = {status: count for status, count in request_summary}
+
+    # Generate charts
+    bar_chart = generate_bar_chart(customer_ids, rating_values, "Customer Ratings")
+    pie_chart = generate_pie_chart(request_status, "Service Requests")
+
+    return render_template(
+        "Admin/ProfessionalDetails.html",
+        professional_id=professional_id,
+        bar_chart=bar_chart,
+        pie_chart=pie_chart,
+        mean_rating=mean_rating
+    )
+
+
+@app.route("/admin/customer/<string:customer_id>")
+def customer_details(customer_id):
+    # Fetch data for the customer
+    ratings = db.session.query(
+        ServiceBooked.rating_by_user,
+        ServiceBooked.professional_id
+    ).filter(ServiceBooked.customer_id == customer_id).all()
+
+    request_summary = db.session.query(
+        ServiceBooked.status,
+        db.func.count(ServiceBooked.booking_id).label("count")
+    ).filter(ServiceBooked.customer_id == customer_id).group_by(ServiceBooked.status).all()
+
+    # Prepare data for charts
+    rating_values = [r.rating_by_user for r in ratings if r.rating_by_user is not None]
+    professional_ids = [r.professional_id for r in ratings if r.rating_by_user is not None]
+    mean_rating = round(sum(rating_values) / len(rating_values), 2) if rating_values else 0
+
+    request_status = {status: count for status, count in request_summary}
+
+    # Generate charts
+    bar_chart = generate_bar_chart(professional_ids, rating_values, "Professional Ratings")
+    pie_chart = generate_pie_chart(request_status, "Service Requests")
+
+    return render_template(
+        "Admin/CustomerDetails.html",
+        customer_id=customer_id,
+        bar_chart=bar_chart,
+        pie_chart=pie_chart,
+        mean_rating=mean_rating
+    )
+
+
+def generate_bar_chart(labels, values, title):
+    plt.figure(figsize=(8, 6))
+    plt.bar(labels, values, color='skyblue')
+    plt.title(title)
+    plt.xlabel("IDs")
+    plt.ylabel("Ratings")
+    plt.tight_layout()
+
+    # Save plot to a bytes buffer
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    plt.close()
+
+    # Encode image to base64
+    return base64.b64encode(buffer.getvalue()).decode()
+
+
+def generate_pie_chart(data, title):
+    plt.figure(figsize=(8, 6))
+    labels = list(data.keys())
+    values = list(data.values())
+    plt.pie(values, labels=labels, autopct='%1.1f%%', colors=['#ff9999', '#66b3ff', '#99ff99'])
+    plt.title(title)
+    plt.tight_layout()
+
+    # Save plot to a bytes buffer
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    plt.close()
+
+    # Encode image to base64
+    return base64.b64encode(buffer.getvalue()).decode()
 
 
 
@@ -636,7 +746,7 @@ def professional_home():
                     print(professional_id,last_rejection_id,service_request.booking_id)
                     
                     db.session.add(rejection_entry)
-
+                    db.session.add(reject_data)
                 db.session.commit()
                 flash("Action recorded successfully.")
             except Exception as e:
@@ -845,3 +955,116 @@ def professional_rating(booking_id):
     # Render the rating form
     return render_template("Customer/rating.html", service_request=service_request)
 
+@app.route("/Professional/rating/<booking_id>", methods=['POST', 'GET'])
+def customer_rating(booking_id):
+    if request.method == "POST":
+        # Fetch form data
+        service_rating = request.form.get('service_rating')
+        service_remarks = request.form.get('service_remarks')
+
+        # Fetch the corresponding service request
+        service_request = ServiceBooked.query.filter_by(booking_id=booking_id).first()
+
+        if service_request:
+            # Update the service request with rating and remarks
+            service_request.rating_by_professional = service_rating
+            service_request.remarks_by_professional = service_remarks
+            
+            # Commit changes to the database
+            db.session.commit()
+            flash("Thank you for your feedback!", "success")
+            return redirect(url_for('professional_home'))
+        else:
+            flash("Invalid service request.", "danger")
+            return redirect(url_for('professional_home'))
+
+    # Fetch service details for the GET request to display the rating form
+    service_request = db.session.query(
+        ServiceBooked.booking_id,
+        Service.service_name,
+        Service.service_id,
+        Customer.customer_id,
+        ServiceBooked.request_date,
+        Customer.full_name.label("customer_name"),
+        Professional.contact_number
+    ).join(Service, ServiceBooked.service_id == Service.service_id) \
+     .outerjoin(Customer, ServiceBooked.customer_id == Customer.customer_id) \
+     .filter(ServiceBooked.booking_id == booking_id).first()
+
+    # If no service request found, redirect to customer home
+    if not service_request:
+        flash("Service request not found.", "danger")
+        return redirect(url_for('professional_home'))
+
+    # Render the rating form
+    return render_template("Professional/rating.html", service_request=service_request)
+
+@app.route("/Professional/Search", methods=["POST", "GET"])
+def professional_search():
+    if 'user_id' not in session:
+        flash("Please log in to access your account.", "danger")
+        return redirect(url_for('login'))
+
+    professional_id = session['user_id']  # Retrieve professional ID from the session
+    service_requests = []  # Default to an empty list for template consistency
+
+    if request.method == "POST":
+        search_type = request.form.get("search_type")
+        search_query = request.form.get("search_query", "").strip()
+
+        # Handle search by date
+        if search_type == "date":
+            try:
+                search_date = datetime.strptime(search_query, '%Y-%m-%d').date()
+                service_requests = db.session.query(
+                    ServiceBooked.booking_id,
+                    Service.service_name,
+                    Service.service_id,
+                    Customer.full_name.label("customer_name"),
+                    Customer.contact.label("customer_contact"),
+                    ServiceBooked.request_date,
+                    ServiceBooked.status
+                ).join(Service, ServiceBooked.service_id == Service.service_id) \
+                 .join(Customer, ServiceBooked.customer_id == Customer.customer_id) \
+                 .filter(ServiceBooked.professional_id == professional_id) \
+                 .filter(func.date(ServiceBooked.request_date) == search_date).all()
+            except ValueError:
+                flash("Invalid date format. Use YYYY-MM-DD.", "danger")
+
+        # Handle search by customer location
+        elif search_type == "location":
+            service_requests = db.session.query(
+                ServiceBooked.booking_id,
+                Service.service_name,
+                Service.service_id,
+                Customer.full_name.label("customer_name"),
+                Customer.address.label("customer_location"),
+                ServiceBooked.request_date,
+                ServiceBooked.status
+            ).join(Service, ServiceBooked.service_id == Service.service_id) \
+             .join(Customer, ServiceBooked.customer_id == Customer.customer_id) \
+             .filter(ServiceBooked.professional_id == professional_id) \
+             .filter(Customer.address.ilike(f"%{search_query}%")).all()
+
+        # Handle search by customer pin
+        elif search_type == "pin":
+            service_requests = db.session.query(
+                ServiceBooked.booking_id,
+                Service.service_name,
+                Service.service_id,
+                Customer.full_name.label("customer_name"),
+                Customer.pin.label("customer_pin"),
+                ServiceBooked.request_date,
+                ServiceBooked.status
+            ).join(Service, ServiceBooked.service_id == Service.service_id) \
+             .join(Customer, ServiceBooked.customer_id == Customer.customer_id) \
+             .filter(ServiceBooked.professional_id == professional_id) \
+             .filter(Customer.pin == search_query).all()
+
+        else:
+            flash("Invalid search type. Please select a valid option.", "warning")
+
+    return render_template(
+        '/Professional/Search.html',
+        service_requests=service_requests
+    )

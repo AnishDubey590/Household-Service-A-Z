@@ -31,10 +31,7 @@
               <a class="nav-link active" aria-current="page" href="#">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{url_for('admin_search')}}">Search</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{url_for('admin_summary')}}">Summary</a>
+              <a class="nav-link" href="{{url_for('professional_search')}}">Search</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('login') }}">Logout</a>
@@ -47,6 +44,7 @@
         </div>
       </div>
     </nav>
+    
     <h3 style="font-size:20px;">Service Requests</h3>
     <div>
       <table class="table table-bordered" style="border: 3px solid #bdc3c7; border-collapse: collapse;">
@@ -60,55 +58,47 @@
           </tr>
         </thead>
         <tbody>
-  
           {% for row in customer_book_data %}
-          {% if row.request_status == "Accepted" and row.professional_id == professional_id %}
+            {% set flag1 = {'value': false} %}
+            <!-- Check if this row has been rejected by the professional -->
+            {% for rejection_data in rejection_entry_data %}
+              {% if rejection_data.booking_id == row.booked_service_id and rejection_data.professional_id == professional_id %}
+                {% if flag1.update({'value': true}) %}
+              {% endif %}
+              {% endif %}
+              {% endfor %}
+              <p>{{flag1['value']}}</p>
             <tr>
               <td>{{ row.customer_full_name }}</td>
               <td>{{ row.customer_contact }}</td>
               <td>{{ row.customer_address }}, {{ row.customer_pin }}</td>
               <td>{{ row.request_status }}</td>
-              <td><p>Accepted</p></td>
-            </tr>
-          {% else %}
-            {% set is_rejected = false %}
-            {% set stop_checking = false %}
-        
-            {% for reject in rejection_entry_data %}
-              {% if not stop_checking and row.booked_service_id == reject.booking_id and professional_id == reject.professional_id %}
-                {% set is_rejected = true %}
-                {% set stop_checking = true %}
-              {% endif %}
-            {% endfor %}
-        
-            {% if not is_rejected %}
-              <tr>
-                <td>{{ row.customer_full_name }}</td>
-                <td>{{ row.customer_contact }}</td>
-                <td>{{ row.customer_address }}, {{ row.customer_pin }}</td>
-                <td>{{ row.request_status }}</td>
-                <td>
+              <td>
+              
+                {% if flag1['value'] %}
+                  <!-- If rejected, show "Rejected" instead of buttons -->
+                  <p>Rejected</p>
+                {% else %}
                   {% if row.request_status == "Pending" %}
                     <form method="POST" action="{{ url_for('professional_home') }}" style="display:inline;">
                       <input type="hidden" name="service_id" value="{{ row.booked_service_id }}">
                       <button type="submit" name="action" value="Accept" class="btn btn-success btn-sm">Accept</button>
                       <button type="submit" name="action" value="Reject" class="btn btn-danger btn-sm">Reject</button>
                     </form>
+                  {% elif row.request_status == "Closed" %}
+                    {% if row.rating_by_professional is none %}
+                      <a href="{{ url_for('customer_rating', booking_id=row.booked_service_id) }}" class="btn btn-primary btn-sm">Rate</a>
+                    {% else %}
+                      <p>Rated</p>
+                    {% endif %}
                   {% endif %}
-                </td>
-              </tr>
-            {% endif %}
-          {% endif %}
-        {% endfor %}
-        
+                {% endif %}
+              </td>
+            </tr>
+          {%endfor%}
           
-      </table>
-    </div>
-
-
         </tbody>
       </table>
     </div>
-
   </body>
 </html>

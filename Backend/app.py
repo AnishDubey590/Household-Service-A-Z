@@ -11,7 +11,7 @@ app.config.from_object(Config)
 db = SQLAlchemy(app)
 
 
-
+ 
 # Import routes to register them
 from routes import *
 
