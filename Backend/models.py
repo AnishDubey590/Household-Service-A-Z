@@ -107,7 +107,7 @@ class ServiceBooked(db.Model):
     booking_id = db.Column(db.String(50), primary_key=True)
     customer_id = db.Column(db.String(50), db.ForeignKey('Customer.customer_id'), nullable=False)
     professional_id = db.Column(db.String(50), db.ForeignKey('Professional.professional_id'), nullable=True)
-    service_id = db.Column(db.String(50), db.ForeignKey('Service.service_id'), nullable=False)
+    service_id = db.Column(db.String(50), db.ForeignKey('Service.service_id',ondelete='NO ACTION'), nullable=False)
     status = db.Column(db.String(50), nullable=False,primary_key=True)
     request_date = db.Column(db.DateTime, default=datetime.utcnow)
     completion_date = db.Column(db.DateTime, nullable=True)

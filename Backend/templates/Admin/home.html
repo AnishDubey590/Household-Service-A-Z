@@ -53,7 +53,16 @@
         </div>
       </div>
     </nav>
-
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
     <h2 style="font-size:20px;">Services</h2>
     <div>
       <table class="table table-bordered" style="border: 3px solid #bdc3c7; border-collapse: collapse;">
@@ -65,6 +74,7 @@
               <th>Service Name</th>
               <th>Service Description</th>
               <th>Base Price</th>
+              <th>delete service</th>
             </tr>
           </thead>
           <tbody>
@@ -76,6 +86,11 @@
               <td>{{ row.service_name }}</td>
               <td>{{ row.service_description }}</td>
               <td>{{ row.base_price }}</td>
+              <td>
+              <form method="POST" action="{{ url_for('delete_service',service_id=row.service_id) }}" style="display:inline;">
+                <button type="submit" class="btn btn-success btn-sm">Delete</button>
+              </form>
+            </td>
             </tr>
             {% endfor %}
           </tbody>

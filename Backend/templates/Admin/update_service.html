@@ -44,7 +44,7 @@
                     <select class="form-select" name="service_option" required>
                       <option selected>Choose a service</option>
                       {% for name in Service_names %}
-                      <option value="1">{{name}}</option>
+                      <option value="{{name}}">{{name}}</option>
                       {%endfor%}
                     </select>
                   </div>
@@ -55,8 +55,7 @@
                 <label for="basePrice" class="form-label">Base Price</label>
                 <input name="Base_Price" class="form-control" id="basePrice" placeholder="Enter base price">
   
-                <label for="imageUpload" class="form-label">Upload Image</label>
-                <input type="file" name="image" class="form-control" id="imageUpload">
+        
             </div>
             {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
@@ -68,7 +67,7 @@
           {% endif %}
           {% endwith %}
             <div class="btn-group">
-                <button type="submit" class="btn btn-primary">Add</button>
+                <button type="submit" class="btn btn-primary">update</button>
                 <a href="{{ url_for('admin_home') }}" class="btn btn-secondary">Cancel</a>
             </div>
         </form>

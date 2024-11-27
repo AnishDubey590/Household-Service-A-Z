@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import io
 import base64
 from flask import render_template, send_file
-from sqlalchemy.sql import case
+from sqlalchemy.sql import case,text
 
 
 
@@ -548,7 +548,27 @@ def generate_pie_chart(data, title):
     # Encode image to base64
     return base64.b64encode(buffer.getvalue()).decode()
 
-
+@app.route('/delete_service/<string:service_id>', methods=['POST'])
+def delete_service(service_id):
+    try:
+        # Update references in services_booked
+        db.session.query(ServiceBooked).filter_by(service_id=service_id).update(
+            {"service_id": "UNKNOWN_SERVICE"}
+        )
+        db.session.commit()
+        
+        # Delete the service
+        service = db.session.query(Service).filter_by(service_id=service_id).first()
+        if service:
+            db.session.delete(service)
+            db.session.commit()
+            print(f"Service with ID {service_id} deleted successfully.")
+        else:
+            print(f"Service with ID {service_id} not found.")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error deleting service: {e}")
+    return redirect(url_for('admin_home'))  
 
 
 @app.route("/Admin/Service", methods=["POST", "GET"])
@@ -871,7 +891,6 @@ def admin_update_service():
         Service_name = request.form.get('service_option').strip()  # Strip spaces and convert to lowercase
         description = request.form['Description']
         Base_price = request.form['Base_Price']
-        image = request.files.get('image')
 
         # Debugging: Print the submitted and processed service name
         print(f"Service name submitted: {Service_name}")
@@ -880,10 +899,10 @@ def admin_update_service():
         service_record = Service.query.filter_by(service_name=Service_name).first()
 
         # Debugging: Print the result of the query
-        print(f"Service name in database: {service_record.service_name if service_record else 'None'}")
+        print(service_record)
 
         if service_record:
-            service_record.description = description
+            service_record.service_description = description
             service_record.base_price = Base_price
 
             # Commit the changes to the database
